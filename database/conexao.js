@@ -6,7 +6,7 @@ const libsqlDriver = require('@libsql/sqlite3');
 
 const sequelize = new Sequelize({
    dialect: 'sqlite', // O Sequelize exige que seja 'sqlite' aqui
-   storage: 'SUA_URL_DO_TURSO_AQUI?authToken=SEU_TOKEN_AQUI', // Coloque sua URL e Token do Turso juntos aqui
+   storage: 'libsql://database-riandeyvid-35.aws-us-east-2.turso.io', // Coloque sua URL e Token do Turso juntos aqui
    dialectModule: libsqlDriver, // Força o Sequelize a usar o Turso em vez do arquivo local
    logging: false
 });
