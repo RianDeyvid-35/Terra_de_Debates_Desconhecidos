@@ -8,10 +8,10 @@
     "test": "vitest",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
-    "test:coverage": "vitest run--coverage"
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@sequelize/sqlite3": "^7.0.0-alpha.48",
+    "@libsql/sqlite3": "^0.3.1",
     "bcryptjs": "^3.0.3",
     "connect-flash": "^0.1.1",
     "cookie-parser": "~1.4.4",
