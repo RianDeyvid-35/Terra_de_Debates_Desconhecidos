@@ -5,7 +5,6 @@ const libsqlDriver = require('@libsql/sqlite3');
 const tursoUrl = process.env.TURSO_DATABASE_URL;
 const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
-// Alerta extra para te ajudar no console do Render
 if (!tursoUrl || !tursoToken) {
    console.error("❌ ERRO CRÍTICO: As variáveis TURSO_DATABASE_URL ou TURSO_AUTH_TOKEN não foram encontradas no ambiente!");
 }
@@ -17,4 +16,10 @@ const sequelize = new Sequelize({
    logging: false
 });
 
-// ... resto do código do sync e exports
+// Executa o sync de forma isolada para não afetar o que é exportado
+sequelize.sync() 
+   .then(() => console.log('Conectado ao Turso com sucesso! 🎉'))
+   .catch(err => console.error('Erro ao conectar ao banco:', err));
+
+// OBRIGATORIAMENTE SEPARADO NO FINAL DO ARQUIVO:
+module.exports = sequelize;
