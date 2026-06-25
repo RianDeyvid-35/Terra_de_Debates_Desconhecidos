@@ -1,3 +1,5 @@
+const postService = require('../../modules/post/postService.js');
+
 it('cria postagem valida', () => {
   const post = postService.create({
     title: 'Bombs?',

@@ -1,12 +1,12 @@
 import request from 'supertest';
 import { describe, it, expect, beforeEach } from 'vitest';
-import app from '../../src/app.js';
-import database from '../../src/database/database.js';
+import app from '../../app.js';
+import database from '../../database/conexao.js';
 
 describe('Terras de Debates Desconhecidos', () => {
-  beforeEach(() => {
-    database.reset();
-  });
+  beforeEach(async () => {
+  await database.sync({ force: true });
+});
 
   it('cadastra usuario valido', async () => {
     const response = await request(app)
