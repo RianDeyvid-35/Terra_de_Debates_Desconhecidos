@@ -49,7 +49,7 @@ function descongelar(rows) {
 });
 // ---------------------------------------------------------------------
 
-
+const isTestEnv = process.env.NODE_ENV === 'test';
 const tursoUrl = process.env.TURSO_DATABASE_URL;
 const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
