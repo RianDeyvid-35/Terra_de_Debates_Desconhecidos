@@ -15,10 +15,6 @@ body {
 }
 
 
-.navbar {
-    background-color: ffffee;
-}
-
 .navbar-brand {
     font-weight: 800;
     color: var(--primary-color) !important;
@@ -27,7 +23,7 @@ body {
 
 
 .nav-link {
-    color: #333;
+    color: #880000;
     font-weight: 500;
     padding: 12px 20px;
     border-radius: 10px;
@@ -137,7 +133,7 @@ footer {
 
 
 .sidebar {
-    background: white;
+    background: ffffee;
     border-right: 1px solid #eee;
     height: calc(100vh - 56px);
     position: sticky;
