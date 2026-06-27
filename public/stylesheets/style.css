@@ -7,12 +7,17 @@
 
 
 body {
-    background-color: #f8f9fa;
+    background-color: #ffffee;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    color: #880000;
 }
 
+
+.navbar {
+    background-color: ffffee;
+}
 
 .navbar-brand {
     font-weight: 800;
