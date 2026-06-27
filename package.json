@@ -5,10 +5,10 @@
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
-    "test": "vitest",
-    "test:unit": "vitest run tests/unit",
-    "test:integration": "vitest run tests/integration",
-    "test:coverage": "vitest run --coverage"
+    "test": "cross-env NODE_ENV=test vitest run",
+    "test:unit": "cross-env NODE_ENV=test vitest run tests/unit",
+    "test:integration": "cross-env NODE_ENV=test vitest run tests/integration",
+    "test:coverage": "cross-env NODE_ENV=test vitest run --coverage"
   },
   "dependencies": {
     "@libsql/sqlite3": "^0.3.1",
@@ -23,10 +23,12 @@
     "http-errors": "~1.6.3",
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
-    "sequelize": "^6.37.8"
+    "sequelize": "^6.37.8",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.9",
+    "cross-env": "^7.0.3",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
     "vitest": "^4.1.9"
