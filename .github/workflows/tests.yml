@@ -11,22 +11,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Baixar o código do repositório
-      uses: actions/checkout@v4
+      - name: Baixar o código do repositório
+        uses: actions/checkout@v4
 
-    - name: Instalar o Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-        cache: 'npm'
+      - name: Instalar o Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
 
-    - name: Instalar dependências
-      run: npm install
+      - name: Instalar dependências
+        run: npm install
 
-    - name: Rodar os testes do Vitest
-      env:
-        NODE_ENV: test
-        DB_DIALECT: sqlite
-        DB_STORAGE: :memory: 
-        JWT_SECRET: chave_secreta_ambiente_ci_vitest
-      run: npm test
+      - name: Rodar os testes do Vitest
+        env:
+          NODE_ENV: test
+          DB_DIALECT: sqlite
+          DB_STORAGE: :memory:
+          JWT_SECRET: chave_secreta_ambiente_ci_vitest
+        run: npm test
