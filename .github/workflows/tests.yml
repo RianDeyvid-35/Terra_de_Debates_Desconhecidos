@@ -24,4 +24,9 @@ jobs:
       run: npm install
 
     - name: Rodar os testes do Vitest
+      env:
+        NODE_ENV: test
+        DB_DIALECT: sqlite
+        DB_STORAGE: :memory: 
+        JWT_SECRET: chave_secreta_ambiente_ci_vitest
       run: npm test
