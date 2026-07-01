@@ -10,9 +10,10 @@ exports.register = async (req, res) => {
             return res.redirect('/register');
         }
 
-        // 2. Verificar se usuário ou e-mail já existem (opcional, mas melhora o UX)
+        // 2. Verificar se usuário ou e-mail já existem
         const emailExists = await User.findOne({ where: { email } });
         const usernameExists = await User.findOne({ where: { username } });
+        
         if (emailExists || usernameExists) {
             req.flash('error', 'Este e-mail ou usuário já está cadastrado.');
             return res.redirect('/register');
@@ -42,39 +43,56 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-   try {
-      const { login, password } = req.body; // login pode ser email ou username
+    try {
+        const { login, password } = req.body;
+        const { Op } = require("sequelize");
 
-      // 1. Buscar usuário por email OU username
-      const user = await User.findOne({
-         where: {
-            [require('sequelize').Op.or]: [{ email: login }, { username: login }]
-         }
-      });
+        // Buscar usuário por email ou username
+        const user = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { email: login },
+                    { username: login }
+                ]
+            }
+        });
 
-      // 2. Verificar se usuário existe e se a senha bate
-      if (!user || !(await bcrypt.compare(password, user.password))) {
-         req.flash('error', 'E-mail/Usuário ou senha incorretos.');
-         return res.redirect('/login');
-      }
+        if (!user) {
+            req.flash('error', 'E-mail/Usuário ou senha incorretos.');
+            return res.redirect('/login');
+        }
 
-      // 3. Criar a sessão do usuário
-      req.session.user = {
-         id: user.id,
-         username: user.username,
-         email: user.email
-      };
+        const senhaCorreta = await bcrypt.compare(password, user.password);
 
-      // 4. Redirecionar para o feed
-      res.redirect('/feed');
+        if (!senhaCorreta) {
+            req.flash('error', 'E-mail/Usuário ou senha incorretos.');
+            return res.redirect('/login');
+        }
 
-   } catch (error) {
-      console.error(error);
-      req.flash('error', 'Ocorreu um erro ao tentar entrar.');
-      res.redirect('/login');
-   }
+        // Criar sessão
+        req.session.user = {
+            id: user.id,
+            username: user.username,
+            email: user.email
+        };
+
+        // Salvar sessão antes de redirecionar
+        req.session.save((err) => {
+            if (err) {
+                console.error(err);
+                req.flash('error', 'Erro ao criar sessão.');
+                return res.redirect('/login');
+            }
+
+            res.redirect('/feed');
+        });
+
+    } catch (error) {
+        console.error(error);
+        req.flash('error', 'Ocorreu um erro ao tentar entrar.');
+        res.redirect('/login');
+    }
 };
-
 
 exports.logout = (req, res) => {
    req.session.destroy(() => {

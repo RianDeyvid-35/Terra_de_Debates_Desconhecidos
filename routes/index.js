@@ -1,46 +1,102 @@
 var express = require('express');
 var router = express.Router();
+
 const userController = require('../modules/user/userController');
+const postController = require('../modules/post/postController');
+const commentController = require('../modules/comment/commentController');
+
 const authMiddleware = require('../middlewares/auth');
 const upload = require('../middlewares/multer');
 
-// Rota para a página inicial 
-router.get('/', function (req, res, next) {
-   res.render('index', { title: 'Anonymus' });
+router.get('/', (req, res) => {
+    res.render('index', {
+        title: 'Anonymus'
+    });
 });
 
-// Rota para exibir o formulário de cadastro
 router.get('/register', (req, res) => {
-   res.render('register', { title: 'Criar Conta' });
+    res.render('register', {
+        title: 'Criar Conta'
+    });
 });
 
-// Rota que processa o formulário de cadastro
 router.post('/register', userController.register);
 
-// Rota para exibir o formulário de login
 router.get('/login', (req, res) => {
-   res.render('login', { title: 'Entrar' });
+    res.render('login', {
+        title: 'Entrar'
+    });
 });
 
-// Rota para processar o formulário de login
 router.post('/login', userController.login);
 
-// Rota para processar o logout
 router.get('/logout', userController.logout);
 
-// Rota para exibir o feed de vídeos (protegida por autenticação)
 router.get('/feed', authMiddleware, async (req, res) => {
-    const user = await userController.getProfile(req.session.user.id);
-    res.render('home', { user });
+
+    try {
+
+        const user = await userController.getProfile(req.session.user.id);
+        const posts = await postController.getAllPosts();
+
+        res.render('home', {
+            title: 'Feed',
+            user,
+            posts
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.redirect('/login');
+    }
+
 });
 
-// Rota para exibir o perfil do usuário (protegida por autenticação)
 router.get('/profile/edit', authMiddleware, async (req, res) => {
-    const user = await userController.getProfile(req.session.user.id);
-    res.render('edit-profile', { user });
+
+    try {
+
+        const user = await userController.getProfile(req.session.user.id);
+
+        if (!user) {
+            return res.redirect('/feed');
+        }
+
+        res.render('edit-profile', {
+            title: 'Editar Perfil',
+            user
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.redirect('/feed');
+    }
+
 });
 
-// Rota de atualização (Protegida + Upload de 1 arquivo chamado 'profilePicture')
-router.post('/profile/edit', authMiddleware, upload.single('profilePicture'), userController.updateProfile);
+router.post(
+    '/profile/edit',
+    authMiddleware,
+    upload.single('profilePicture'),
+    userController.updateProfile
+);
 
-module.exports = router; // <------ última linha do arquivos
+router.post('/posts/:id/comments', authMiddleware, async (req, res) => {
+
+    try {
+
+        await commentController.createComment(req, res);
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            message: 'Erro ao salvar comentário.'
+        });
+
+    }
+
+});
+
+module.exports = router;
