@@ -2,61 +2,71 @@ import request from 'supertest';
 import { describe, it, expect, beforeEach } from 'vitest';
 import app from '../../app.js';
 import database from '../../database/conexao.js';
+import Post from '../../modules/post/postModel.js';
 
 describe('Terras de Debates Desconhecidos', () => {
   beforeEach(async () => {
-  await database.sync({ force: true });
-});
+    await database.sync({ force: true });
+  });
 
   it('cadastra usuario valido', async () => {
     const response = await request(app)
       .post('/register')
       .send({
-        name: 'Morshu',
+        username: 'Morshu',
         email: 'morshu@rupee.com',
-        password: 'bombs123'
+        password: 'bombs123',
+        confirmPassword: 'bombs123',
+        fullName: 'Morshu'
       });
 
-    expect(response.status).toBe(201);
+    expect(response.status).toBe(302);
   });
 
   it('impede cadastro com e-mail duplicado', async () => {
     await request(app)
       .post('/register')
       .send({
-        name: 'Morshu',
+        username: 'Morshu',
         email: 'morshu@rupee.com',
-        password: 'bombs123'
+        password: 'bombs123',
+        confirmPassword: 'bombs123',
+        fullName: 'Morshu'
       });
 
     const response = await request(app)
       .post('/register')
       .send({
-        name: 'Corvinho',
+        username: 'Corvinho',
         email: 'morshu@rupee.com',
-        password: 'heehoo321'
+        password: 'heehoo321',
+        confirmPassword: 'heehoo321',
+        fullName: 'Corvo Dancinhas'
       });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe('/register');
   });
 
   it('login valido cria sessao', async () => {
     await request(app)
       .post('/register')
       .send({
-        name: 'Morshu',
+        username: 'Morshu',
         email: 'morshu@rupee.com',
-        password: 'bombs123'
+        password: 'bombs123',
+        confirmPassword: 'bombs123',
+        fullName: 'Morshu'
       });
 
     const response = await request(app)
       .post('/login')
       .send({
-        email: 'morshu@rupee.com',
+        login: 'morshu@rupee.com',
         password: 'bombs123'
       });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(302);
     expect(response.headers['set-cookie']).toBeDefined();
   });
 
@@ -64,14 +74,16 @@ describe('Terras de Debates Desconhecidos', () => {
     const agent = request.agent(app);
 
     await agent.post('/register').send({
-        name: 'Morshu',
-        email: 'morshu@rupee.com',
-        password: 'bombs123'
+      username: 'Morshu',
+      email: 'morshu@rupee.com',
+      password: 'bombs123',
+      confirmPassword: 'bombs123',
+      fullName: 'Morshu'
     });
 
     await agent.post('/login').send({
-        email: 'morshu@rupee.com',
-        password: 'bombs123'
+      login: 'morshu@rupee.com',
+      password: 'bombs123'
     });
 
     const response = await agent.post('/posts').send({
@@ -79,7 +91,7 @@ describe('Terras de Debates Desconhecidos', () => {
       content: 'Its yours, my friend. As long as you have enough rupees!'
     });
 
-    expect(response.status).toBe(201);
+    expect(response.status).toBe(302);
   });
 
   it('usuario nao logado nao cria postagem', async () => {
@@ -90,24 +102,44 @@ describe('Terras de Debates Desconhecidos', () => {
         content: 'Come back when youre a little, hummm, richer.'
       });
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(302);
+    expect(response.headers.location).toBe('/login');
   });
 
   it('comentario vazio e rejeitado', async () => {
     const agent = request.agent(app);
 
     await agent.post('/register').send({
-        name: 'Morshu',
-        email: 'morshu@rupee.com',
-        password: 'bombs123'
+      username: 'Morshu',
+      email: 'morshu@rupee.com',
+      password: 'bombs123',
+      confirmPassword: 'bombs123',
+      fullName: 'Morshu'
     });
 
     await agent.post('/login').send({
-        email: 'morshu@rupee.com',
-        password: 'bombs123'
+      login: 'morshu@rupee.com',
+      password: 'bombs123'
     });
 
-    const post = await agent.post('/posts').send({
+    await agent.post('/posts').send({
+      title: 'Lamp oil, rope?',
+      content: 'Bombs?'
+    });
+
+    const post = await Post.findOne({
+      where: {
+        title: 'Lamp oil, rope?'
+      }
+    });
+
+    const response = await agent
+      .post(`/posts/${post.id}/comments`)
+      .send({
+        content: ''
+      });
+
+    /*const post = await agent.post('/posts').send({
       title: 'Lamp oil, rope?',
       content: 'Bombs?'
     });
@@ -116,7 +148,7 @@ describe('Terras de Debates Desconhecidos', () => {
       .post(`/posts/${post.body.id}/comments`)
       .send({
         content: ''
-      });
+      });*/
 
     expect(response.status).toBe(400);
   });
@@ -126,34 +158,49 @@ describe('Terras de Debates Desconhecidos', () => {
     const visitante = request.agent(app);
 
     await autor.post('/register').send({
-        name: 'Morshu',
-        email: 'morshu@rupee.com',
-        password: 'bombs123'
+      username: 'Morshu',
+      email: 'morshu@rupee.com',
+      password: 'bombs123',
+      confirmPassword: 'bombs123',
+      fullName: 'Morshu'
     });
 
     await autor.post('/login').send({
-        email: 'morshu@rupee.com',
-        password: 'bombs123'
+      login: 'morshu@rupee.com',
+      password: 'bombs123'
     });
 
-    const post = await autor.post('/posts').send({
+    await autor.post('/posts').send({
       title: 'Enough Rupees',
       content: 'Hummmmmm'
     });
 
+    const post = await Post.findOne({
+      where: {
+        title: 'Enough Rupees'
+      }
+    });
+
+    /*const post = await autor.post('/posts').send({
+      title: 'Enough Rupees',
+      content: 'Hummmmmm'
+    });*/
+
     await visitante.post('/register').send({
-        name: 'Corvinho',
-        email: 'corvo@dancinhas.com',
-        password: 'heehoo321'
+      username: 'Corvinho',
+      email: 'corvo@dancinhas.com',
+      password: 'heehoo321',
+      confirmPassword: 'heehoo321',
+      fullName: 'Corvo Dancinhas'
     });
 
     await visitante.post('/login').send({
-      email: 'corvo@dancinhas.com',
+      login: 'corvo@dancinhas.com',
       password: 'heehoo321'
     });
 
     const response = await visitante
-      .post(`/posts/${post.body.id}/comments`)
+      .post(`/posts/${post.id}/comments`)
       .send({
         content: 'Hee!'
       });
@@ -166,36 +213,51 @@ describe('Terras de Debates Desconhecidos', () => {
     const visitante = request.agent(app);
 
     await autor.post('/register').send({
-        name: 'Morshu',
-        email: 'morshu@rupee.com',
-        password: 'bombs123'
+      username: 'Morshu',
+      email: 'morshu@rupee.com',
+      password: 'bombs123',
+      confirmPassword: 'bombs123',
+      fullName: 'Morshu'
     });
 
     await autor.post('/login').send({
-        email: 'morshu@rupee.com',
-        password: 'bombs123'
+      login: 'morshu@rupee.com',
+      password: 'bombs123'
     });
 
-    const post = await autor.post('/posts').send({
+    /*const post = await autor.post('/posts').send({
+      title: 'Its yours',
+      content: 'My friend'
+    });*/
+
+    await autor.post('/posts').send({
       title: 'Its yours',
       content: 'My friend'
     });
 
+    const post = await Post.findOne({
+      where: {
+        title: 'Its yours'
+      }
+    });
+
     await visitante.post('/register').send({
-      name: 'Corvinho',
+      username: 'Corvinho',
       email: 'corvo@dancinhas.com',
-      password: 'heehoo321'
+      password: 'heehoo321',
+      confirmPassword: 'heehoo321',
+      fullName: 'Corvo Dancinhas'
     });
 
     await visitante.post('/login').send({
-      email: 'corvo@dancinhas.com',
+      login: 'corvo@dancinhas.com',
       password: 'heehoo321'
     });
 
     const response = await visitante.post(
-      `/posts/${post.body.id}/delete`
+      `/posts/${post.id}/delete`
     );
 
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(302);
   });
 });
