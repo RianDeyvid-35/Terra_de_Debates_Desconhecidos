@@ -28,7 +28,7 @@ jobs:
       # Usamos npm install porque o package-lock.json enviado nao parece
       # estar sincronizado com as dependencias atuais do package.json.
       - name: Instalar dependencias
-        run: npm install --no-audit --no-fund
+        run: npm install --no-audit --no-found
 
       - name: Executar testes automatizados
         run: npm test
